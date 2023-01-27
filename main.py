@@ -1,3 +1,4 @@
+import asyncio 
 import random
 import pygame.display
 import button
@@ -16,16 +17,13 @@ screen_height = 450 + bottom_panel
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Kingdom Hearts RPG_Demo')  # game title
 
+
 # define game variables
-current_fighter = 1
 total_fighters = 2
-action_cool_down = 0
 action_wait_time = 90
 attack = False
 cure = False
 cure_effect = 15
-clicked = False
-game_over = 0
 map_out = 0
 
 
@@ -42,12 +40,6 @@ orange = (255, 165, 0)
 # background image
 background_img = pygame.image.load('img/Background/background.png').convert_alpha()
 ending_img = pygame.image.load('img/Background/zank you.jpg').convert_alpha()
-
-run00 = True  # runs start screen
-run0 = False  # runs first map
-run1 = False  # runs Boss fight
-run2 = False  # runs retry screen
-run3 = False  # runs end game screen
 
 # panel image
 panel_img = pygame.image.load('img/Panel/kh_panel.png')
@@ -326,187 +318,202 @@ def fade_out(width, height):
         pygame.display.update()
         pygame.time.delay(5)
 
+async def main():
 
-while run00:
+    current_fighter = 1
+    game_over = 0
+    clicked = False
+    action_cool_down = 0
+    
+    run00 = True
+    run0 = False
+    run1 = False  # runs Boss fight
+    run2 = False  # runs retry screen
+    run3 = False  # runs end game screen
 
-    if start_button.draw():
-        start_screen = 1
-        if start_screen != 0:
-            fade_out(800, 600)
-            run00 = False
-            run0 = True
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run00 = False
-    pygame.display.update()
+    
 
-    while run0:
+    while run00:
 
-        clock.tick(fps)
-        g.main()
-        if map_out == 1:
-            fade_out(800, 600)
-            run0 = False
-            run1 = True
-            mixer.music.load(f'final_music/One Winged Angel _ Kingdom Hearts HD 2.5 ReMIX Remastered OST.ogg')
-            mixer.music.play(-1)
+        if start_button.draw():
+            start_screen = 1
+            if start_screen != 0:
+                fade_out(800, 600)
+                run00 = False
+                run0 = True
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run0 = False
-
+                run00 = False
         pygame.display.update()
 
-        while run1:
+        while run0:
 
-            # frames for animation
             clock.tick(fps)
+            g.main()
+            if map_out == 1:
+                fade_out(800, 600)
+                run0 = False
+                run1 = True
+                mixer.music.load(f'final_music/One Winged Angel _ Kingdom Hearts HD 2.5 ReMIX Remastered OST.ogg')
+                mixer.music.play(-1)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run0 = False
 
-            # draw the background
-            draw_bg_battle()
+            pygame.display.update()
 
-            # draw the panel
-            draw_panel()
-            sora_health_bar.draw(sora_fighter.hp)
-            sephiroth_health_bar.draw(sephiroth.hp)
+            while run1:
 
-            # draw fighting functions includes animations and positions
-            sora_fighter.update()
-            sora_fighter.positioning_for_sora_fighter()
-            sora_fighter.draw()
-            sephiroth.update()
-            sephiroth.positioning_for_sephiroth()
-            sephiroth.draw()
+                # frames for animation
+                clock.tick(fps)
 
-            # draw damage text
-            damage_text_group.update()
-            damage_text_group.draw(screen)
+                # draw the background
+                draw_bg_battle()
 
-            # control player action
-            # reset action variables
-            attack = False
-            cure = False
-            target = None
-            pos = pygame.mouse.get_pos()
+                # draw the panel
+                draw_panel()
+                sora_health_bar.draw(sora_fighter.hp)
+                sephiroth_health_bar.draw(sephiroth.hp)
 
-            # makes mouse visible
-            pygame.mouse.set_visible(True)
-            if sephiroth.rect.collidepoint(pos):
-                # hide mouse
-                pygame.mouse.set_visible(False)
-                # show key_blade in place of cursor
-                screen.blit(key_blade_img, pos)
-                if clicked and sephiroth.alive:
-                    attack = True
-                    target = sephiroth
+                # draw fighting functions includes animations and positions
+                sora_fighter.update()
+                sora_fighter.positioning_for_sora_fighter()
+                sora_fighter.draw()
+                sephiroth.update()
+                sephiroth.positioning_for_sephiroth()
+                sephiroth.draw()
 
-            if cure_button.draw():
-                cure = True
-            # show number of potions remaining
-            draw_text(str(sora_fighter.cure), font, green, 277, screen_height - bottom_panel + 78)
+                # draw damage text
+                damage_text_group.update()
+                damage_text_group.draw(screen)
 
-            if game_over == 0:
-                # player action and enemy action
-                if sora_fighter.alive:
-                    if current_fighter == 1:
-                        action_cool_down += 1
-                        if action_cool_down >= action_wait_time:
-                            if attack and target is not None:
-                                sora_fighter.attack(target)
-                                attack_sound = mixer.Sound('sound/sora/attack/Sora_Attack! (3).wav')
-                                attack_sound.play()
-                                hit_sound = mixer.Sound('sound/sephiroth/hit/Hit!.wav')
-                                hit_sound.play()
-                                current_fighter += 1
-                                action_cool_down = 0
+                # control player action
+                # reset action variables
+                attack = False
+                cure = False
+                target = None
+                pos = pygame.mouse.get_pos()
 
-                            # cure
-                            if cure:
-                                if sora_fighter.hp != sora_fighter.max_hp:
+                # makes mouse visible
+                pygame.mouse.set_visible(True)
+                if sephiroth.rect.collidepoint(pos):
+                    # hide mouse
+                    pygame.mouse.set_visible(False)
+                    # show key_blade in place of cursor
+                    screen.blit(key_blade_img, pos)
+                    if clicked and sephiroth.alive:
+                        attack = True
+                        target = sephiroth
 
-                                    if sora_fighter.cure > 0:
-                                        heal_sound = mixer.Sound('sound/sora/cure/Heal!.wav')
-                                        heal_sound.play()
-                                        # check if cure heal beyond max health
-                                        if sora_fighter.max_hp - sora_fighter.hp > cure_effect:
-                                            heal_amount = cure_effect
+                if cure_button.draw():
+                    cure = True
+                # show number of potions remaining
+                draw_text(str(sora_fighter.cure), font, green, 277, screen_height - bottom_panel + 78)
+
+                if game_over == 0:
+                    # player action and enemy action
+                    if sora_fighter.alive:
+                        if current_fighter == 1:
+                            action_cool_down += 1
+                            if action_cool_down >= action_wait_time:
+                                if attack and target is not None:
+                                    sora_fighter.attack(target)
+                                    attack_sound = mixer.Sound('sound/sora/attack/Sora_Attack! (3).wav')
+                                    attack_sound.play()
+                                    hit_sound = mixer.Sound('sound/sephiroth/hit/Hit!.wav')
+                                    hit_sound.play()
+                                    current_fighter += 1
+                                    action_cool_down = 0
+
+                                # cure
+                                if cure:
+                                    if sora_fighter.hp != sora_fighter.max_hp:
+
+                                        if sora_fighter.cure > 0:
+                                            heal_sound = mixer.Sound('sound/sora/cure/Heal!.wav')
+                                            heal_sound.play()
+                                            # check if cure heal beyond max health
+                                            if sora_fighter.max_hp - sora_fighter.hp > cure_effect:
+                                                heal_amount = cure_effect
+                                            else:
+                                                heal_amount = sora_fighter.max_hp - sora_fighter.hp
+                                            sora_fighter.hp += heal_amount
+                                            sora_fighter.cure -= 1
+                                            current_fighter += 1
+                                            action_cool_down = 0
                                         else:
-                                            heal_amount = sora_fighter.max_hp - sora_fighter.hp
-                                        sora_fighter.hp += heal_amount
-                                        sora_fighter.cure -= 1
-                                        current_fighter += 1
-                                        action_cool_down = 0
+                                            unable = mixer.Sound('sound/sora/unable/se000.ps3#176.wav')
+                                            unable.play()
                                     else:
                                         unable = mixer.Sound('sound/sora/unable/se000.ps3#176.wav')
                                         unable.play()
-                                else:
-                                    unable = mixer.Sound('sound/sora/unable/se000.ps3#176.wav')
-                                    unable.play()
 
-                    # if current_fighter == 2:
-                    if sephiroth.alive:
-                        if current_fighter == 2:
-                            action_cool_down += 1
-                            if action_cool_down >= action_wait_time:
-                                sephiroth.attack(sora_fighter)
-                                attack_sound = mixer.Sound('sound/sephiroth/attack/Sephiroth_Attack!.wav')
-                                attack_sound.play()
-                                hit_sound = mixer.Sound('sound/sora/hit/Hit! (1).wav')
-                                hit_sound.play()
-                                current_fighter = 1
-                                action_cool_down = 0
+                        # if current_fighter == 2:
+                        if sephiroth.alive:
+                            if current_fighter == 2:
+                                action_cool_down += 1
+                                if action_cool_down >= action_wait_time:
+                                    sephiroth.attack(sora_fighter)
+                                    attack_sound = mixer.Sound('sound/sephiroth/attack/Sephiroth_Attack!.wav')
+                                    attack_sound.play()
+                                    hit_sound = mixer.Sound('sound/sora/hit/Hit! (1).wav')
+                                    hit_sound.play()
+                                    current_fighter = 1
+                                    action_cool_down = 0
+                        else:
+                            game_over = 1
+
                     else:
-                        game_over = 1
+                        game_over = -1
 
-                else:
-                    game_over = -1
-
-                if game_over == -1:
-                    mixer.music.stop()
-                    fade_out(800, 600)
-                    run1 = False
-                    run2 = True
-                    while run2:
-                        pygame.mouse.set_visible(True)
-                        if retry_button.draw():
-                            fade_out(800, 600)
-                            mixer.music.load(
-                                f'final_music/One Winged Angel _ Kingdom Hearts HD 2.5 ReMIX Remastered OST.ogg')
-                            mixer.music.play(-1)
-                            sora_fighter.retry()
-                            sephiroth.retry()
-                            current_fighter = 1
-                            game_over = 0
-                            run2 = False
-                            run1 = True
-
-                        for event in pygame.event.get():
-                            if event.type == pygame.QUIT:
+                    if game_over == -1:
+                        mixer.music.stop()
+                        fade_out(800, 600)
+                        run1 = False
+                        run2 = True
+                        while run2:
+                            pygame.mouse.set_visible(True)
+                            if retry_button.draw():
+                                fade_out(800, 600)
+                                mixer.music.load(
+                                    f'final_music/One Winged Angel _ Kingdom Hearts HD 2.5 ReMIX Remastered OST.ogg')
+                                mixer.music.play(-1)
+                                sora_fighter.retry()
+                                sephiroth.retry()
+                                current_fighter = 1
+                                game_over = 0
                                 run2 = False
-                        pygame.display.update()
-                if game_over == 1:
-                    mixer.music.stop()
-                    fade_out(800, 600)
-                    pygame.mixer.music.unload()
-                    mixer.music.load(f'final_music/Kingdom Hearts_ Kairis Theme II.ogg')
-                    mixer.music.play(-1)
-                    run1 = False
-                    run3 = True
-                    while run3:
-                        pygame.mouse.set_visible(True)
-                        draw_bg_ending()
+                                run1 = True
 
-                        for event in pygame.event.get():
-                            if event.type == pygame.QUIT:
-                                run3 = False
-                        pygame.display.update()
+                            for event in pygame.event.get():
+                                if event.type == pygame.QUIT:
+                                    run2 = False
+                            pygame.display.update()
+                    if game_over == 1:
+                        mixer.music.stop()
+                        fade_out(800, 600)
+                        pygame.mixer.music.unload()
+                        mixer.music.load(f'final_music/Kingdom Hearts_ Kairis Theme II.ogg')
+                        mixer.music.play(-1)
+                        run1 = False
+                        run3 = True
+                        while run3:
+                            pygame.mouse.set_visible(True)
+                            draw_bg_ending()
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run1 = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    clicked = True
-                else:
-                    clicked = False
-            pygame.display.update()
+                            for event in pygame.event.get():
+                                if event.type == pygame.QUIT:
+                                    run3 = False
+                            pygame.display.update()
 
-pygame.quit()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        run1 = False
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        clicked = True
+                    else:
+                        clicked = False
+                pygame.display.update()
+                await asyncio.sleep(0)
+            
+asyncio.run(main())
