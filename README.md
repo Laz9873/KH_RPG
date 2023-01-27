@@ -1,6 +1,6 @@
-# KH_RPG
+KH_RPG
 **RUN MAIN.py**
-HIT ENEMY WITH CURSOR
-HEAL BY CLICKING ON LEAF BY HEALTHBAR
-RETRY BUTTON IMPLEMENTED(ALLOWS YOU TO RETRY)
+Hit by clicking on them with cursor
+Heal by clicking on leaf icon
+Retry button after defeat
 
