@@ -22,7 +22,6 @@ pygame.display.set_caption('Kingdom Hearts RPG_Demo')  # game title
 total_fighters = 2
 action_wait_time = 90
 attack = False
-cure = False
 cure_effect = 15
 map_out = 0
 
@@ -323,6 +322,7 @@ async def main():
     current_fighter = 1
     game_over = 0
     clicked = False
+    cure = False
     action_cool_down = 0
     
     run00 = True
@@ -418,9 +418,9 @@ async def main():
                             if action_cool_down >= action_wait_time:
                                 if attack and target is not None:
                                     sora_fighter.attack(target)
-                                    attack_sound = mixer.Sound('sound/sora/attack/Sora_Attack! (3).wav')
+                                    attack_sound = mixer.Sound('sound/sora/attack/Sora_Attack! (3).ogg')
                                     attack_sound.play()
-                                    hit_sound = mixer.Sound('sound/sephiroth/hit/Hit!.wav')
+                                    hit_sound = mixer.Sound('sound/sephiroth/hit/Hit!.ogg')
                                     hit_sound.play()
                                     current_fighter += 1
                                     action_cool_down = 0
@@ -430,7 +430,7 @@ async def main():
                                     if sora_fighter.hp != sora_fighter.max_hp:
 
                                         if sora_fighter.cure > 0:
-                                            heal_sound = mixer.Sound('sound/sora/cure/Heal!.wav')
+                                            heal_sound = mixer.Sound('sound/sora/cure/Heal!.ogg')
                                             heal_sound.play()
                                             # check if cure heal beyond max health
                                             if sora_fighter.max_hp - sora_fighter.hp > cure_effect:
@@ -442,10 +442,10 @@ async def main():
                                             current_fighter += 1
                                             action_cool_down = 0
                                         else:
-                                            unable = mixer.Sound('sound/sora/unable/se000.ps3#176.wav')
+                                            unable = mixer.Sound('sound/sora/unable/se000.ps3176.ogg')
                                             unable.play()
                                     else:
-                                        unable = mixer.Sound('sound/sora/unable/se000.ps3#176.wav')
+                                        unable = mixer.Sound('sound/sora/unable/se000.ps3176.ogg')
                                         unable.play()
 
                         # if current_fighter == 2:
@@ -454,9 +454,9 @@ async def main():
                                 action_cool_down += 1
                                 if action_cool_down >= action_wait_time:
                                     sephiroth.attack(sora_fighter)
-                                    attack_sound = mixer.Sound('sound/sephiroth/attack/Sephiroth_Attack!.wav')
+                                    attack_sound = mixer.Sound('sound/sephiroth/attack/Sephiroth_Attack!.ogg')
                                     attack_sound.play()
-                                    hit_sound = mixer.Sound('sound/sora/hit/Hit! (1).wav')
+                                    hit_sound = mixer.Sound('sound/sora/hit/Hit! (1).ogg')
                                     hit_sound.play()
                                     current_fighter = 1
                                     action_cool_down = 0
@@ -514,6 +514,7 @@ async def main():
                     else:
                         clicked = False
                 pygame.display.update()
+                
                 await asyncio.sleep(0)
             
 asyncio.run(main())
